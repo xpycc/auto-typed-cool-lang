@@ -27,7 +27,7 @@ extern int optind;
 extern Classes parse_results;	 // list of classes; used for multiple files 
 extern Program ast_root;	 // the AST produced by the parse
 
-// int curr_lineno = 1;               // needed for lexical analyzer
+extern int curr_lineno;    // defined in tree.cc
 char *curr_filename;
 
 extern int omerrs;             // a count of lex and parse errors
@@ -48,12 +48,15 @@ int main(int argc, char *argv[]) {
     curr_lineno = 1;
     curr_filename = argv[optind++];
     cool_yyparse();
-  }
-  if (omerrs != 0) {
-    cerr << "Compilation halted due to lex and parse errors\n";
+    if (omerrs != 0) {
+      cerr << "Compilation halted due to lex and parse errors\n";
+      exit(1);
+    }
+    ast_root->dump_with_types(cout,0);
+  } else {
+    fprintf(stderr, "%s: no input file.\n", argv[0]);
     exit(1);
   }
-  ast_root->dump_with_types(cout,0);
   return 0;
 }
 

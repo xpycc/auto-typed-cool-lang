@@ -1,21 +1,18 @@
 LIB= -lfl
 
 SRC= cool.l cool.y
-CSRC= parser-phase.cc utilities.cc stringtab.cc dumptype.cc \
-      tree.cc cool-tree.cc handle_flags.cc 
-TSRC= mycoolc
-HSRC= 
-CGEN= cool-lex.cc cool-parser.cc
-HGEN= cool-parser.hh
-LIBS=
+CSRC= coolc-driver.cc cgen.cc cgen-supp.cc semant.cc utilities.cc \
+	  stringtab.cc dumptype.cc tree.cc cool-tree.cc handle_flags.cc
+CGEN= cool-lex.cc cool-parse.cc
+HGEN= cool-parse.tab.h
 CFIL= ${CSRC} ${CGEN}
 OBJS= ${CFIL:.cc=.o}
-OUTPUT= good.output bad.output cool-parser.output
+OUTPUT= cool-parse.output
 
 CPPINCLUDE= -I. -I./include
 
 FFLAGS= -d -o cool-lex.cc
-BFLAGS= -d -v -y --debug -p cool_yy -o cool-parser.cc
+BFLAGS= --defines=cool-parse.tab.h -v -y --debug -p cool_yy -o cool-parse.cc
 
 CC= g++
 CFLAGS= -g -Wall -Wno-unused -Wno-write-strings -DDEBUG ${CPPINCLUDE}
@@ -23,13 +20,15 @@ FLEX= flex ${FFLAGS}
 BISON= bison ${BFLAGS}
 DEPEND= ${CC} -MM ${CPPINCLUDE}
 
+all: coolc
+
 %.d: %.cc ${SRC}
 	${SHELL} -ec '${DEPEND} $< | sed '\''s/\($*\.o\)[ :]*/\1 $@ : /g'\'' > $@'
 
 -include ${CFIL:.cc=.d}
 
-parser: ${OBJS}
-	${CC} ${CFLAGS} ${OBJS} ${LIB} -o parser
+coolc: ${OBJS}
+	${CC} ${CFLAGS} ${OBJS} ${LIB} -o $@
 
 .cc.o:
 	${CC} ${CFLAGS} -c $<
@@ -37,17 +36,11 @@ parser: ${OBJS}
 cool-lex.cc: cool.l
 	${FLEX} cool.l
 
-cool-parser.cc cool-parser.h: cool.y
+cool-parse.cc cool-parse.h: cool.y
 	${BISON} cool.y
 
-dotest:	parser tests/parser-good.cl bad.cl tests/parser-bad.cl
-	@echo "\nRunning parser on good.cl\n"
-	-./parser tests/parser-good.cl
-	@echo "\nRunning parser on bad.cl\n"
-	-./parser tests/parser-bad.cl
-
 clean :
-	-rm -f ${OUTPUT} *.s core ${OBJS} ${CGEN} ${HGEN} lexer parser cgen semant *~ *.a *.o *.d
+	-rm -f ${OUTPUT} *.s core ${OBJS} ${CGEN} ${HGEN} coolc *~ *.a *.o *.d
 
 clean-compile:
 	@-rm -f core ${OBJS} ${CGEN} ${HGEN}
