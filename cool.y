@@ -1,10 +1,11 @@
 /*
-*  cool.y
-*              Parser definition for the COOL language.
-*
-*/
+ *  cool.y
+ *              Parser definition for the COOL language.
+ *
+ */
 %{
 #include <iostream>
+#include <cstdarg>
 #include "cool-tree.h"
 #include "stringtab.h"
 #include "utilities.h"
@@ -72,7 +73,7 @@ plus_consts : INT_CONST '+' INT_CONST
 
 */
 
-void yyerror(char *s);        /* defined below; called for each parse error */
+void yyerror(const char *s);        /* defined below; called for each parse error */
 extern int yylex();           /* the entry point to the lexer  */
 
 /************************************************************************/
@@ -153,6 +154,8 @@ documentation for details). */
 %left               '~'
 %left               '@'
 %left               '.'
+
+%error-verbose
 
 %%
 /* Save the root of the abstract syntax tree in a global variable. */
@@ -316,17 +319,16 @@ case_list           : case ';'                          /* non-empty case list  
 %%
 
 /* This function is called automatically when Bison detects a parse error. */
-void yyerror(char *s)
+void yyerror(const char *s)
 {
   extern int curr_lineno;
   
-  cerr << "\"" << curr_filename << "\", line " << curr_lineno << ": " \
-  << s << " at or near ";
+  cerr << "\"" << curr_filename << "\", line " << curr_lineno << ": "
+       << s << ".\n  At or near ";
   print_cool_token(yychar);
   cerr << endl;
   omerrs++;
   
   if(omerrs>50) {fprintf(stdout, "More than 50 errors\n"); exit(1);}
 }
-
 
