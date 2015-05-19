@@ -10,7 +10,7 @@
 
 
 #include "tree.h"
-#include "cool-tree.handcode.h"
+#include "cool-tree-extras.h"
 
 
 // define the class for phylum

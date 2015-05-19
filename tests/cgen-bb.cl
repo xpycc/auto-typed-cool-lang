@@ -8,6 +8,7 @@ class Main {
 	  b <- not b;
 	io.out_int(i);
 	io.out_string(s);
+    io.out_string("\n");
   o.copy();
 	self;
   }};
